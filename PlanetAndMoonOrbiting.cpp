@@ -5,26 +5,20 @@
 #include "HW6.h"
 #include <math.h>
 
-
 #define MAX_LOADSTRING 100
 
-#define SCALE 100
-#define SCALE2 20
-#define V_p 0.01		//My comments:
-#define V_p2 0.1		//Instead of defining V_p2, define a coefficient to multiply V_p1 and initialize V_p2 as a variable  
-#define DIAMETER 5
-#define DIAMETER2 3
-double t = 0;
-double trace = 0;
-double x;
-double y;
-double xx;
-double yy;
+#define RADIUS_PLANET 3
+#define RADIUS_MOON 4
+#define RADIUS_ORBIT_MOON 30
+#define RADIUS_ORBIT_PLANET 150
+#define VP 0.03
+#define COEFF 5
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+double tp = 0, tm = 0, xp, yp, xm, ym, vm = VP*COEFF;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -119,6 +113,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
+
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -162,23 +157,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-			RECT visibleregion = ps.rcPaint;
-            // TODO: Add any drawing code that uses hdc here...				My commments:
-			int XCENTER = (visibleregion.right - visibleregion.left) / 2; //(visibleregion.right + visibleregion.left) /2
-			int YCENTER = (visibleregion.bottom - visibleregion.top) / 2; //(visibleregion.bottom + visibleregion.top) / 2
-
-			x = XCENTER + SCALE*(cos(t));
-			y = YCENTER + SCALE*(sin(t));
-			Ellipse(hdc, x, y, x + DIAMETER, y + DIAMETER);
-			t += V_p;
-			xx = x + SCALE2*(cos(trace));
-			yy = y + SCALE2*(sin(trace));
-			Ellipse(hdc, xx, yy, xx + DIAMETER2, yy + DIAMETER2);
-			trace += V_p2;
-
+			RECT visibleRegion = ps.rcPaint;
+            // TODO: Add any drawing code that uses hdc here...
+			xp = sin(tp) * RADIUS_ORBIT_PLANET + visibleRegion.right / 2;
+			yp = cos(tp) * RADIUS_ORBIT_PLANET + visibleRegion.bottom / 2;
+			Ellipse(hdc, xp - RADIUS_PLANET, yp - RADIUS_PLANET, xp + RADIUS_PLANET, yp + RADIUS_PLANET);
+			tp += VP;
+			xm = sin(tm) * RADIUS_ORBIT_MOON + xp;
+			ym = cos(tm) * RADIUS_ORBIT_MOON + yp;
+			Ellipse(hdc, xm - RADIUS_MOON, ym - RADIUS_MOON, xm + RADIUS_MOON, ym + RADIUS_MOON);
+			tm += vm;
 			InvalidateRect(hWnd, NULL, FALSE);
 			Sleep(1);
-			EndPaint(hWnd, &ps);
+            EndPaint(hWnd, &ps);
         }
         break;
     case WM_DESTROY:
